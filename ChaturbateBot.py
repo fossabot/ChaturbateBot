@@ -24,6 +24,8 @@ ap.add_argument("-n", "--db-name", required=True,type=str,
         help="name of the database")
 ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.getcwd(),
         help="set the bot's working-folder")
+ap.add_argument("-t", "--time", required=False,type=int,default=10,
+        help="time wait between every end of the check_online_status thread")
 args = vars(ap.parse_args())
 bot = telebot.TeleBot(args["key"])
 user_dict={}
@@ -32,6 +34,7 @@ db_ip=args["ip"]
 db_login=args["login"]
 db_password=args["password"]
 db_name=args["db_name"]
+wait_time=args["time"]
 def risposta(sender, messaggio):
     try:
      bot.send_chat_action(sender.chat.id, action="typing")
@@ -93,7 +96,7 @@ def check_online_status():
                 exec_query("UPDATE CHATURBATE \
                  SET ONLINE=%s\
                   WHERE USERNAME=%s AND CHAT_ID=%s"%("T",username_list[x],chatid_list[x]))
-        time.sleep(10)
+        time.sleep(wait_time)
 def obtain_usernames():
  @bot.message_handler(commands=['start', 'help'])
  def handle_start_help(message):
