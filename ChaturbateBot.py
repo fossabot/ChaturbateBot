@@ -37,7 +37,7 @@ def risposta(sender, messaggio):
      bot.send_chat_action(sender.chat.id, action="typing")
      bot.send_message(sender.chat.id, messaggio)
     except ApiException as e:
-        print(e.result)      
+        print(e.result)
 def exec_query(query):
  # Open database connection
  db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
@@ -177,9 +177,9 @@ def obtain_usernames():
            risposta(message,"These are the users you are currently following: "+followed_users)
  bot.polling(none_stop=False)
 threads = []
-t = threading.Thread(target=check_online_status)
-e = threading.Thread(target=obtain_usernames)
-threads.append(t)
-threads.append(e)
-t.start()
-e.start()
+check_online_status_thread = threading.Thread(target=check_online_status)
+obtain_usernames_thread = threading.Thread(target=obtain_usernames)
+threads.append(check_online_status_thread)
+threads.append(obtain_usernames_thread)
+check_online_status_thread.start()
+obtain_usernames_thread.start()
