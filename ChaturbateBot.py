@@ -39,8 +39,8 @@ def risposta(sender, messaggio):
     try:
      bot.send_chat_action(sender.chat.id, action="typing")
      bot.send_message(sender.chat.id, messaggio)
-    except ApiException as e:
-        print(e.result)
+    except Exception as e:
+        print(e)
 def exec_query(query):
  # Open database connection
  db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
@@ -87,15 +87,15 @@ def check_online_status():
             html = urllib.request.urlopen(req).read()
             if (b"al momento offline</strong>" in html):
                 exec_query("UPDATE CHATURBATE \
-                 SET ONLINE=%s\
-                  WHERE USERNAME=%s AND CHAT_ID=%s"%("F",username_list[x],chatid_list[x]))
+                 SET ONLINE='%s'\
+                  WHERE USERNAME='%s' AND CHAT_ID='%s'"%("F",username_list[x],chatid_list[x]))
                 if online_list[x]=="T":
                      risposta(chatid_list[x], username_list[x]+" is now offline")
             elif online_list[x]=="F":
                 risposta(chatid_list[x], username_list[x]+" is now online! You can watch the live here: "+target.replace("it","en",1)) #the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
                 exec_query("UPDATE CHATURBATE \
-                 SET ONLINE=%s\
-                  WHERE USERNAME=%s AND CHAT_ID=%s"%("T",username_list[x],chatid_list[x]))
+                 SET ONLINE='%s'\
+                  WHERE USERNAME='%s' AND CHAT_ID='%s'"%("T",username_list[x],chatid_list[x]))
         time.sleep(wait_time)
 def obtain_usernames():
  @bot.message_handler(commands=['start', 'help'])
@@ -121,7 +121,7 @@ def obtain_usernames():
           db_add = MySQLdb.connect(db_ip,db_login,db_password,db_name)
           cursor_add = db_add.cursor()
           sql = "SELECT * FROM CHATURBATE \
-          WHERE CHAT_ID=%s"%(chatid)
+          WHERE CHAT_ID='%s'"%(chatid)
           try:
            cursor_add.execute(sql)
            results_add = cursor_add.fetchall()
@@ -133,7 +133,7 @@ def obtain_usernames():
              db_add.close()
           if username not in username_list_add:
            exec_query("INSERT INTO CHATURBATE \
-           VALUES (%s, %s, %c)" %(username, chatid, "F"))
+           VALUES ('%s', '%s', '%c')" %(username, chatid, "F"))
            risposta(message,username+" has been added")
           else:
            risposta(message, username+" has already been added")
@@ -150,7 +150,7 @@ def obtain_usernames():
         username="" #set username to a blank string
     chatid=message.chat.id
     exec_query("DELETE FROM CHATURBATE \
-     WHERE USERNAME=%s AND CHAT_ID=%s"%(username, chatid))
+     WHERE USERNAME='%s' AND CHAT_ID='%s'"%(username, chatid))
     if username=="":
         risposta(message, "The username you tried to remove doesn't exist or there has been an error")
     else:
@@ -163,7 +163,7 @@ def obtain_usernames():
    db_list = MySQLdb.connect(db_ip,db_login,db_password,db_name)
    cursor_list = db_list.cursor()
    sql = "SELECT * FROM CHATURBATE \
-   WHERE CHAT_ID=%s" %(chatid)
+   WHERE CHAT_ID='%s'" %(chatid)
    try:
        cursor_list.execute(sql)
        results_list = cursor_list.fetchall()
