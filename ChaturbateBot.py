@@ -147,7 +147,10 @@ def obtain_usernames():
     chatid=message.chat.id
     exec_query("DELETE FROM CHATURBATE \
      WHERE USERNAME=%s AND CHAT_ID=%s"%(username, chatid))
-    risposta(message,username+" has been removed")
+    if username=="":
+        risposta(message, "The username you tried to remove doesn't exist or there has been an error")
+    else:
+        risposta(message,username+" has been removed")
  @bot.message_handler(commands=['list'])
  def handle_list(message):
    chatid=message.chat.id
