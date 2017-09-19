@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 import telebot
 import requests
-import base64
 import os
-import logging
 import time
 import urllib.request
 import os.path
-import sys
 import argparse
 #import instaLooter as instalooter
 from telebot import types
@@ -117,8 +114,6 @@ def obtain_usernames():
           risposta(message, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
      else:
           username_list_add=[]
-          chatid_list_add=[]
-          online_list_add=[]
           db_add = MySQLdb.connect(db_ip,db_login,db_password,db_name)
           cursor_add = db_add.cursor()
           sql = "SELECT * FROM CHATURBATE \
@@ -157,8 +152,6 @@ def obtain_usernames():
  def handle_list(message):
    chatid=message.chat.id
    username_list_list=[]
-   chatid_list_list=[]
-   online_list_list=[]
    followed_users=""
    db_list = MySQLdb.connect(db_ip,db_login,db_password,db_name)
    cursor_list = db_list.cursor()
