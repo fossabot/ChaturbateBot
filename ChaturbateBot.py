@@ -6,7 +6,6 @@ import time
 import urllib.request
 import os.path
 import argparse
-#import instaLooter as instalooter
 from telebot import types
 from telebot import util
 from bs4 import BeautifulSoup
@@ -34,8 +33,11 @@ db_login=args["login"]
 db_password=args["password"]
 db_name=args["db_name"]
 def risposta(sender, messaggio):
-    bot.send_chat_action(sender.chat.id, action="typing")
-    bot.send_message(sender.chat.id, messaggio)
+    try:
+     bot.send_chat_action(sender.chat.id, action="typing")
+     bot.send_message(sender.chat.id, messaggio)
+    except ApiException as e:
+        print(e.result)      
 def exec_query(query):
  # Open database connection
  db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
@@ -52,7 +54,7 @@ def exec_query(query):
    db.rollback()
  # disconnect from server
  db.close()
-#inizializzatione tabella se non esiste
+#default table creation
 exec_query("""CREATE TABLE CHATURBATE (
         USERNAME  CHAR(60) NOT NULL,
         CHAT_ID  CHAR(100),
