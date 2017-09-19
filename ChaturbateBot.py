@@ -59,7 +59,6 @@ exec_query("""CREATE TABLE CHATURBATE (
         USERNAME  CHAR(60) NOT NULL,
         CHAT_ID  CHAR(100),
         ONLINE CHAR(1))""")
-
 def check_online_status():
     while(1):
         username_list=[]
