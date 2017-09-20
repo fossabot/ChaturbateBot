@@ -37,8 +37,8 @@ db_name=args["db_name"]
 wait_time=args["time"]
 def risposta(sender, messaggio):
     try:
-     bot.send_chat_action(sender.chat.id, action="typing")
-     bot.send_message(sender.chat.id, messaggio)
+     bot.send_chat_action(sender, action="typing")
+     bot.send_message(sender, messaggio)
     except Exception as e:
         print(e)
 def exec_query(query):
@@ -115,7 +115,7 @@ def obtain_usernames():
     try:
      html = urllib.request.urlopen(req).read()
      if (b"Access Denied. This room has been banned.</span>" in html or username==""):
-          risposta(message, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
+          risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
      else:
           username_list_add=[]
           db_add = MySQLdb.connect(db_ip,db_login,db_password,db_name)
@@ -134,12 +134,12 @@ def obtain_usernames():
           if username not in username_list_add:
            exec_query("INSERT INTO CHATURBATE \
            VALUES ('%s', '%s', '%c')" %(username, chatid, "F"))
-           risposta(message,username+" has been added")
+           risposta(message.chat.id,username+" has been added")
           else:
-           risposta(message, username+" has already been added")
+           risposta(message.chat.id, username+" has already been added")
     except Exception as e:
         print(e)
-        risposta(message, username+" was not added because it doesn't exist or it has been banned")
+        risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
  @bot.message_handler(commands=['remove'])
  def handle_remove(message):
     print("remove")
@@ -152,9 +152,9 @@ def obtain_usernames():
     exec_query("DELETE FROM CHATURBATE \
      WHERE USERNAME='%s' AND CHAT_ID='%s'"%(username, chatid))
     if username=="":
-        risposta(message, "The username you tried to remove doesn't exist or there has been an error")
+        risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
     else:
-        risposta(message,username+" has been removed")
+        risposta(message.chat.id,username+" has been removed")
  @bot.message_handler(commands=['list'])
  def handle_list(message):
    chatid=message.chat.id
@@ -176,7 +176,7 @@ def obtain_usernames():
            for x in range(0,len(username_list_list)):
                followed_users+=username_list_list[x]+","
            followed_users=followed_users[:-1]
-           risposta(message,"These are the users you are currently following: "+followed_users)
+           risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
  bot.polling(none_stop=False)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
