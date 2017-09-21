@@ -86,11 +86,11 @@ def check_online_status():
             req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
             html = urllib.request.urlopen(req).read()
             if (b"al momento offline</strong>" in html):
-                exec_query("UPDATE CHATURBATE \
-                 SET ONLINE='%s'\
-                  WHERE USERNAME='%s' AND CHAT_ID='%s'"%("F",username_list[x],chatid_list[x]))
                 if online_list[x]=="T":
-                     risposta(chatid_list[x], username_list[x]+" is now offline")
+                    exec_query("UPDATE CHATURBATE \
+                    SET ONLINE='%s'\
+                    WHERE USERNAME='%s' AND CHAT_ID='%s'"%("F",username_list[x],chatid_list[x]))
+                    risposta(chatid_list[x], username_list[x]+" is now offline")
             elif online_list[x]=="F":
                 risposta(chatid_list[x], username_list[x]+" is now online! You can watch the live here: "+target.replace("it","en",1)) #the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
                 exec_query("UPDATE CHATURBATE \
