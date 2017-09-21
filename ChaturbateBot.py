@@ -97,7 +97,7 @@ def check_online_status():
                  SET ONLINE='%s'\
                   WHERE USERNAME='%s' AND CHAT_ID='%s'"%("T",username_list[x],chatid_list[x]))
         time.sleep(wait_time)
-def obtain_usernames():
+def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
  def handle_start_help(message):
     risposta(message,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
@@ -180,8 +180,8 @@ def obtain_usernames():
  bot.polling(none_stop=False)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
-obtain_usernames_thread = threading.Thread(target=obtain_usernames)
+telegram_bot_thread = threading.Thread(target=telegram_bot)
 threads.append(check_online_status_thread)
-threads.append(obtain_usernames_thread)
+threads.append(telegram_bot_thread)
 check_online_status_thread.start()
-obtain_usernames_thread.start()
+telegram_bot_thread.start()
