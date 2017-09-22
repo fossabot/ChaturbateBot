@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 import telebot
-import requests
 import os
 import time
 import urllib.request
 import os.path
 import argparse
-from telebot import types
-from telebot import util
-from bs4 import BeautifulSoup
 import MySQLdb
 import threading
 ap = argparse.ArgumentParser()
