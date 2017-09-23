@@ -24,7 +24,6 @@ ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
 args = vars(ap.parse_args())
 bot = telebot.TeleBot(args["key"])
-user_dict='{}'
 bot_path=args["working_folder"]
 db_ip=args["ip"]
 db_login=args["login"]
