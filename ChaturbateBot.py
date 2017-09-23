@@ -79,18 +79,21 @@ def check_online_status():
         for x in range(0,len(username_list)):
             target="http://it.chaturbate.com/"+username_list[x]
             req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
-            html = urllib.request.urlopen(req).read()
-            if (b"al momento offline</strong>" in html):
+            try:
+             html = urllib.request.urlopen(req).read()
+             if (b"al momento offline</strong>" in html):
                 if online_list[x]=="T":
                     exec_query("UPDATE CHATURBATE \
                     SET ONLINE='{}'\
                     WHERE USERNAME='{}' AND CHAT_ID='{}'".format("F",username_list[x],chatid_list[x]))
                     risposta(chatid_list[x], username_list[x]+" is now offline")
-            elif online_list[x]=="F":
+             elif online_list[x]=="F":
                 risposta(chatid_list[x], username_list[x]+" is now online! You can watch the live here: "+target.replace("it","en",1)) #the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
                 exec_query("UPDATE CHATURBATE \
                  SET ONLINE='{}'\
                   WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
+            except Exception as e:
+                print(e)
         time.sleep(wait_time)
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
