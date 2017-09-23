@@ -24,7 +24,7 @@ ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
 args = vars(ap.parse_args())
 bot = telebot.TeleBot(args["key"])
-user_dict={}
+user_dict='{}'
 bot_path=args["working_folder"]
 db_ip=args["ip"]
 db_login=args["login"]
@@ -84,14 +84,14 @@ def check_online_status():
             if (b"al momento offline</strong>" in html):
                 if online_list[x]=="T":
                     exec_query("UPDATE CHATURBATE \
-                    SET ONLINE='%s'\
-                    WHERE USERNAME='%s' AND CHAT_ID='%s'"%("F",username_list[x],chatid_list[x]))
+                    SET ONLINE='{}'\
+                    WHERE USERNAME='{}' AND CHAT_ID='{}'".format("F",username_list[x],chatid_list[x]))
                     risposta(chatid_list[x], username_list[x]+" is now offline")
             elif online_list[x]=="F":
                 risposta(chatid_list[x], username_list[x]+" is now online! You can watch the live here: "+target.replace("it","en",1)) #the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
                 exec_query("UPDATE CHATURBATE \
-                 SET ONLINE='%s'\
-                  WHERE USERNAME='%s' AND CHAT_ID='%s'"%("T",username_list[x],chatid_list[x]))
+                 SET ONLINE='{}'\
+                  WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
         time.sleep(wait_time)
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
@@ -117,7 +117,7 @@ def telegram_bot():
           db_add = MySQLdb.connect(db_ip,db_login,db_password,db_name)
           cursor_add = db_add.cursor()
           sql = "SELECT * FROM CHATURBATE \
-          WHERE CHAT_ID='%s'"%(chatid)
+          WHERE CHAT_ID='{}'".format(chatid)
           try:
            cursor_add.execute(sql)
            results_add = cursor_add.fetchall()
@@ -129,7 +129,7 @@ def telegram_bot():
              db_add.close()
           if username not in username_list_add:
            exec_query("INSERT INTO CHATURBATE \
-           VALUES ('%s', '%s', '%c')" %(username, chatid, "F"))
+           VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
            risposta(message.chat.id,username+" has been added")
           else:
            risposta(message.chat.id, username+" has already been added")
@@ -146,7 +146,7 @@ def telegram_bot():
         username="" #set username to a blank string
     chatid=message.chat.id
     exec_query("DELETE FROM CHATURBATE \
-     WHERE USERNAME='%s' AND CHAT_ID='%s'"%(username, chatid))
+     WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
     if username=="":
         risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
     else:
@@ -159,7 +159,7 @@ def telegram_bot():
    db_list = MySQLdb.connect(db_ip,db_login,db_password,db_name)
    cursor_list = db_list.cursor()
    sql = "SELECT * FROM CHATURBATE \
-   WHERE CHAT_ID='%s'" %(chatid)
+   WHERE CHAT_ID='{}'".format(chatid)
    try:
        cursor_list.execute(sql)
        results_list = cursor_list.fetchall()
