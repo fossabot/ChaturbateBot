@@ -90,7 +90,7 @@ def check_online_status():
                  SET ONLINE='{}'\
                   WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
             except Exception as e:
-                print(e +"in check_online_status")
+                print(str(e)+"in check_online_status")
         time.sleep(wait_time)
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
@@ -98,14 +98,14 @@ def telegram_bot():
      try:
          risposta(message,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
      except Exception as e:
-         print(e +"in handle_start_help while handling risposta()")
+         print(str(e) +"in handle_start_help while handling risposta()")
  @bot.message_handler(commands=['add'])
  def handle_add(message):
     print("add")
     try:
         username=message.text.split(" ")[1]
     except Exception as e:
-        print(e +"in handle_add while setting username")
+        print(str(e) +"in handle_add while setting username")
         username="" #set username to a blank string
     try:
      chatid=message.chat.id
@@ -126,7 +126,7 @@ def telegram_bot():
            for row in results_add:
              username_list_add.append(row[0])
           except Exception as e:
-             print(e)
+             print(str(e))
           finally:
              db_add.close()
           if username not in username_list_add:
@@ -136,7 +136,7 @@ def telegram_bot():
           else:
            risposta(message.chat.id, username+" has already been added")
     except Exception as e:
-        print(e +"in handle_add")
+        print(str(e) +"in handle_add")
         risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
  @bot.message_handler(commands=['remove'])
  def handle_remove(message):
@@ -145,7 +145,7 @@ def telegram_bot():
         chatid=message.chat.id
         username=message.text.split(" ")[1]
     except Exception as e:
-        print(e)
+        print(str(e))
         username="" #set username to a blank string
         chatid="" #set chatid to a blank string
     exec_query("DELETE FROM CHATURBATE \
@@ -178,7 +178,7 @@ def telegram_bot():
            try:
             risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
            except Exception as e:
-            print(e + "in handle_list while handling risposta()")
+            print(str(e) + "in handle_list while handling risposta()")
  bot.polling(none_stop=False)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
