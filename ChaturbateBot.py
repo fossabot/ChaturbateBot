@@ -44,8 +44,9 @@ def exec_query(query):
    cursor.execute(query)
    # Commit your changes in the database
    db.commit()
- except:
+ except Exception as e:
    # Rollback in case there is any error
+   print(str(e)+" in exec_query")
    db.rollback()
  # disconnect from server
  db.close()
@@ -74,21 +75,21 @@ def check_online_status():
         finally:
                 db.close()
         for x in range(0,len(username_list)):
-            target="http://it.chaturbate.com/"+username_list[x]
+            target="https://it.chaturbate.com/api/chatvideocontext/"+username_list[x]
             req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
             try:
              html = urllib.request.urlopen(req).read()
-             if (b"al momento offline</strong>" in html):
+             if (b"offline" in html):
                 if online_list[x]=="T":
                     exec_query("UPDATE CHATURBATE \
                     SET ONLINE='{}'\
                     WHERE USERNAME='{}' AND CHAT_ID='{}'".format("F",username_list[x],chatid_list[x]))
                     risposta(chatid_list[x], username_list[x]+" is now offline")
              elif online_list[x]=="F":
-                risposta(chatid_list[x], username_list[x]+" is now online! You can watch the live here: "+target.replace("it","en",1)) #the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
+                risposta(chatid_list[x], username_list[x]+" is now online! You can watch the live here: http://en.chaturbate.com/"+username_list[x]) #the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
                 exec_query("UPDATE CHATURBATE \
-                 SET ONLINE='{}'\
-                  WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
+                SET ONLINE='{}'\
+                WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
             except Exception as e:
                 print(str(e)+"in check_online_status")
         time.sleep(wait_time)
@@ -179,7 +180,7 @@ def telegram_bot():
             risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
            except Exception as e:
             print(str(e) + "in handle_list while handling risposta()")
- bot.polling(none_stop=False)
+ bot.polling(none_stop=True)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
 telegram_bot_thread = threading.Thread(target=telegram_bot)
