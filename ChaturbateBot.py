@@ -50,7 +50,7 @@ def exec_query(query):
    db.rollback()
  # disconnect from server
  db.close()
-#default table creation
+ #default table creation
 exec_query("""CREATE TABLE CHATURBATE (
         USERNAME  CHAR(60) NOT NULL,
         CHAT_ID  CHAR(100),
