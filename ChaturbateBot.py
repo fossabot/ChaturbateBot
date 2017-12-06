@@ -94,7 +94,7 @@ def check_online_status():
                 SET ONLINE='{}'\
                 WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
             except Exception as e:
-                print(str(e)+"in check_online_status")
+                print(str(e)+" in check_online_status")
         time.sleep(wait_time)
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
@@ -106,7 +106,7 @@ def telegram_bot():
     try:
         username=message.text.split(" ")[1]
     except Exception as e:
-        print(str(e) +"in handle_add while setting username")
+        print(str(e) +" in handle_add while setting username")
         username="" #set username to a blank string
     try:
      chatid=message.chat.id
@@ -137,7 +137,7 @@ def telegram_bot():
           else:
            risposta(message.chat.id, username+" has already been added")
     except Exception as e:
-        print(str(e) +"in handle_add")
+        print(str(e) +" in handle_add")
         risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
  @bot.message_handler(commands=['remove'])
  def handle_remove(message):
@@ -170,9 +170,9 @@ def telegram_bot():
        results_list = cursor_list.fetchall()
        for row in results_list:
            username_list_list.append(row[0])
-           online_list_list.append(row[1])
+           online_list_list.append(row[2])
    except Exception as e:
-           print (e +"in handle_list while retrieving data from the database")
+           print (str(e) +" in handle_list while retrieving data from the database")
    else: #else vuol dire che il codice viene eseguito se non c'è una exception
     for x in range(0,len(username_list_list)):
        followed_users+=username_list_list[x]+": "
