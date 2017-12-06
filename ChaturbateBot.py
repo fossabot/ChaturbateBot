@@ -181,7 +181,7 @@ def telegram_bot():
                    followed_users+="online\n"
                else:
                    followed_users+="offline\n"
-            risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
+                   risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
  bot.polling(none_stop=True)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
