@@ -175,13 +175,14 @@ def telegram_bot():
            print (e +"in handle_list while retrieving data from the database")
    finally:
            db_list.close()
-           for x in range(0,len(username_list_list)):
-               followed_users+=username_list_list[x]+": "
-               if online_list_list[x]=="T":
-                   followed_users+="online\n"
-               else:
-                   followed_users+="offline\n"
-                   risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
+   else: #else vuol dire che il codice viene eseguito se non c'è una exception
+    for x in range(0,len(username_list_list)):
+       followed_users+=username_list_list[x]+": "
+       if online_list_list[x]=="T":
+           followed_users+="online\n"
+       else:
+           followed_users+="offline\n"
+   risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
  bot.polling(none_stop=True)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
