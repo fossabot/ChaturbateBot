@@ -31,8 +31,11 @@ db_password=args["password"]
 db_name=args["db_name"]
 wait_time=args["time"]
 def risposta(sender, messaggio):
+    try:
      bot.send_chat_action(sender, action="typing")
      bot.send_message(sender, messaggio)
+    except Exception as e:
+        print(str(e))
 def exec_query(query):
  # Open database connection
  db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
@@ -96,10 +99,7 @@ def check_online_status():
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
  def handle_start_help(message):
-     try:
-         risposta(message,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
-     except Exception as e:
-         print(str(e) +"in handle_start_help while handling risposta()")
+     risposta(message,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
  @bot.message_handler(commands=['add'])
  def handle_add(message):
     print("add")
@@ -159,6 +159,7 @@ def telegram_bot():
  def handle_list(message):
    chatid=message.chat.id
    username_list_list=[]
+   online_list_list=[]
    followed_users=""
    db_list = MySQLdb.connect(db_ip,db_login,db_password,db_name)
    cursor_list = db_list.cursor()
@@ -169,17 +170,18 @@ def telegram_bot():
        results_list = cursor_list.fetchall()
        for row in results_list:
            username_list_list.append(row[0])
+           online_list_list.append(row[1])
    except Exception as e:
            print (e +"in handle_list while retrieving data from the database")
    finally:
            db_list.close()
            for x in range(0,len(username_list_list)):
-               followed_users+=username_list_list[x]+","
-           followed_users=followed_users[:-1]
-           try:
+               followed_users+=username_list_list[x]+": "
+               if online_list_list[x]=="T":
+                   followed_users+="online\n"
+               else:
+                   followed_users+="offline\n"
             risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
-           except Exception as e:
-            print(str(e) + "in handle_list while handling risposta()")
  bot.polling(none_stop=True)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
