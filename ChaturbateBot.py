@@ -173,8 +173,6 @@ def telegram_bot():
            online_list_list.append(row[1])
    except Exception as e:
            print (e +"in handle_list while retrieving data from the database")
-   finally:
-           db_list.close()
    else: #else vuol dire che il codice viene eseguito se non c'è una exception
     for x in range(0,len(username_list_list)):
        followed_users+=username_list_list[x]+": "
@@ -182,7 +180,9 @@ def telegram_bot():
            followed_users+="online\n"
        else:
            followed_users+="offline\n"
-   risposta(message.chat.id,"These are the users you are currently following: "+followed_users)
+   finally:
+       db_list.close()
+   risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
  bot.polling(none_stop=True)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
