@@ -193,7 +193,10 @@ def telegram_bot():
    finally:
        db_list.close()
    risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
- bot.polling(none_stop=True)
+ try:
+  bot.polling(none_stop=True)
+ except Exception as e:
+     handle_exception(e)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
 telegram_bot_thread = threading.Thread(target=telegram_bot)
