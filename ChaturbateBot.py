@@ -43,7 +43,7 @@ else:
 def risposta(sender, messaggio):
     try:
      bot.send_chat_action(sender, action="typing")
-     bot.send_message(sender, messaggio, )
+     bot.send_message(sender, messaggio)
     except Exception as e:
         handle_exception(e)
 def exec_query(query):
