@@ -2,3 +2,4 @@ mysqlclient
 requests
 pyTelegramBotApi
 beautifulsoup4
+raven
