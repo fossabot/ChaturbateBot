@@ -64,7 +64,7 @@ def exec_query(query):
  # disconnect from server
  db.close()
  #default table creation
-exec_query("""CREATE TABLE CHATURBATE (
+exec_query("""CREATE TABLE IF NOT EXISTS CHATURBATE (
         USERNAME  CHAR(60) NOT NULL,
         CHAT_ID  CHAR(100),
         ONLINE CHAR(1))""")
@@ -192,7 +192,10 @@ def telegram_bot():
            followed_users+="offline\n"
    finally:
        db_list.close()
-   risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
+   if followed_users=="":
+       risposta(message.chat.id,"You aren't following any user")
+   else:
+       risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
  try:
   bot.polling(none_stop=True)
  except Exception as e:
