@@ -63,7 +63,7 @@ def check_online_status():
         online_list=[]
         sql = "SELECT * FROM CHATURBATE"
         try:
-            db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+            db = sqlite3.connect('database')
             cursor = db.cursor()
             cursor.execute(sql)
             results = cursor.fetchall()
