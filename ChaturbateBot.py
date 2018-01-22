@@ -5,19 +5,11 @@ import time
 import urllib.request
 import os.path
 import argparse
-import MySQLdb
+import sqlite3
 import threading
 ap = argparse.ArgumentParser()
 ap.add_argument("-k", "--key", required=True,type=str,
         help="Telegram bot key")
-ap.add_argument("-ip", required=True,type=str,
-        help="Ip address of the database")
-ap.add_argument("-l", "--login", required=True,type=str,
-        help="login username of the database")
-ap.add_argument("-p", "--password", required=False,type=str,default="",
-        help="password of the database")
-ap.add_argument("-n", "--db-name", required=True,type=str,
-        help="name of the database")
 ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.getcwd(),
         help="set the bot's working-folder")
 ap.add_argument("-t", "--time", required=False,type=int,default=10,
@@ -26,10 +18,6 @@ ap.add_argument("-raven",required=False,type=str,default="",help="Raven client k
 args = vars(ap.parse_args())
 bot = telebot.TeleBot(args["key"])
 bot_path=args["working_folder"]
-db_ip=args["ip"]
-db_login=args["login"]
-db_password=args["password"]
-db_name=args["db_name"]
 wait_time=args["time"]
 raven_key=args["raven"]
 if raven_key!="":
@@ -48,7 +36,7 @@ def risposta(sender, messaggio):
         handle_exception(e)
 def exec_query(query):
  # Open database connection
- db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+ db = sqlite3.connect(bot_path+'/database.db')
  # prepare a cursor object using cursor() method
  cursor = db.cursor()
  # Prepare SQL query to INSERT a record into the database.
@@ -75,7 +63,7 @@ def check_online_status():
         online_list=[]
         sql = "SELECT * FROM CHATURBATE"
         try:
-            db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+            db = sqlite3.connect(bot_path+'/database.db')
             cursor = db.cursor()
             cursor.execute(sql)
             results = cursor.fetchall()
@@ -127,7 +115,7 @@ def telegram_bot():
           risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
      else:
           username_list_add=[]
-          db_add = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+          db_add = sqlite3.connect(bot_path+'/database.db')
           cursor_add = db_add.cursor()
           sql = "SELECT * FROM CHATURBATE \
           WHERE CHAT_ID='{}'".format(chatid)
@@ -171,7 +159,7 @@ def telegram_bot():
    username_list_list=[]
    online_list_list=[]
    followed_users=""
-   db_list = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+   db_list = sqlite3.connect(bot_path+'/database.db')
    cursor_list = db_list.cursor()
    sql = "SELECT * FROM CHATURBATE \
    WHERE CHAT_ID='{}'".format(chatid)
