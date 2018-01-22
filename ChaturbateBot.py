@@ -29,14 +29,14 @@ else:
     def handle_exception(e):
         print(str(e))
 def risposta(sender, messaggio):
-    try:f
+    try:
      bot.send_chat_action(sender, action="typing")
      bot.send_message(sender, messaggio)
     except Exception as e:
         handle_exception(e)
 def exec_query(query):
  # Open database connection
- db = sqlite3.connect(bot_path+'/database.db')f
+ db = sqlite3.connect(bot_path+'/database.db')
  # prepare a cursor object using cursor() method
  cursor = db.cursor()
  # Prepare SQL query to INSERT a record into the database.
