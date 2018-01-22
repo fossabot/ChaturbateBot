@@ -22,6 +22,7 @@ ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.get
         help="set the bot's working-folder")
 ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
+ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
 bot = telebot.TeleBot(args["key"])
 bot_path=args["working_folder"]
@@ -30,12 +31,21 @@ db_login=args["login"]
 db_password=args["password"]
 db_name=args["db_name"]
 wait_time=args["time"]
+raven_key=args["raven"]
+if raven_key!="":
+    from raven import Client
+    client = Client(raven_key)
+    def handle_exception(e):
+        client.captureException()
+else:
+    def handle_exception(e):
+        print(str(e))
 def risposta(sender, messaggio):
     try:
      bot.send_chat_action(sender, action="typing")
      bot.send_message(sender, messaggio)
     except Exception as e:
-        print(str(e))
+        handle_exception(e)
 def exec_query(query):
  # Open database connection
  db = MySQLdb.connect(db_ip,db_login,db_password,db_name)
@@ -49,12 +59,12 @@ def exec_query(query):
    db.commit()
  except Exception as e:
    # Rollback in case there is any error
-   print(str(e)+" in exec_query")
+   handle_exception(e)
    db.rollback()
  # disconnect from server
  db.close()
  #default table creation
-exec_query("""CREATE TABLE CHATURBATE (
+exec_query("""CREATE TABLE IF NOT EXISTS CHATURBATE (
         USERNAME  CHAR(60) NOT NULL,
         CHAT_ID  CHAR(100),
         ONLINE CHAR(1))""")
@@ -94,7 +104,7 @@ def check_online_status():
                 SET ONLINE='{}'\
                 WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T",username_list[x],chatid_list[x]))
             except Exception as e:
-                print(str(e)+"in check_online_status")
+                handle_exception(e)
         time.sleep(wait_time)
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
@@ -106,7 +116,7 @@ def telegram_bot():
     try:
         username=message.text.split(" ")[1]
     except Exception as e:
-        print(str(e) +"in handle_add while setting username")
+        handle_exception(e)
         username="" #set username to a blank string
     try:
      chatid=message.chat.id
@@ -127,7 +137,7 @@ def telegram_bot():
            for row in results_add:
              username_list_add.append(row[0])
           except Exception as e:
-             print(str(e))
+             handle_exception(e)
           finally:
              db_add.close()
           if username not in username_list_add:
@@ -137,7 +147,7 @@ def telegram_bot():
           else:
            risposta(message.chat.id, username+" has already been added")
     except Exception as e:
-        print(str(e) +"in handle_add")
+        handle_exception(e)
         risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
  @bot.message_handler(commands=['remove'])
  def handle_remove(message):
@@ -146,7 +156,7 @@ def telegram_bot():
         chatid=message.chat.id
         username=message.text.split(" ")[1]
     except Exception as e:
-        print(str(e))
+        handle_exception(e)
         username="" #set username to a blank string
         chatid="" #set chatid to a blank string
     exec_query("DELETE FROM CHATURBATE \
@@ -170,9 +180,9 @@ def telegram_bot():
        results_list = cursor_list.fetchall()
        for row in results_list:
            username_list_list.append(row[0])
-           online_list_list.append(row[1])
+           online_list_list.append(row[2])
    except Exception as e:
-           print (e +"in handle_list while retrieving data from the database")
+           handle_exception(e)
    else: #else vuol dire che il codice viene eseguito se non c'è una exception
     for x in range(0,len(username_list_list)):
        followed_users+=username_list_list[x]+": "
@@ -182,8 +192,14 @@ def telegram_bot():
            followed_users+="offline\n"
    finally:
        db_list.close()
-   risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
- bot.polling(none_stop=True)
+   if followed_users=="":
+       risposta(message.chat.id,"You aren't following any user")
+   else:
+       risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
+ try:
+  bot.polling(none_stop=True)
+ except Exception as e:
+     handle_exception(e)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
 telegram_bot_thread = threading.Thread(target=telegram_bot)
