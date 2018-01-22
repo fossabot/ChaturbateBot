@@ -115,7 +115,7 @@ def telegram_bot():
           risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
      else:
           username_list_add=[]
-          db_add = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+          db_add = sqlite3.connect('database')
           cursor_add = db_add.cursor()
           sql = "SELECT * FROM CHATURBATE \
           WHERE CHAT_ID='{}'".format(chatid)
@@ -159,7 +159,7 @@ def telegram_bot():
    username_list_list=[]
    online_list_list=[]
    followed_users=""
-   db_list = MySQLdb.connect(db_ip,db_login,db_password,db_name)
+   db_list = sqlite3.connect('database')
    cursor_list = db_list.cursor()
    sql = "SELECT * FROM CHATURBATE \
    WHERE CHAT_ID='{}'".format(chatid)
