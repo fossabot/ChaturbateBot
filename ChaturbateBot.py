@@ -7,6 +7,8 @@ import os.path
 import argparse
 import sqlite3
 import threading
+from concurrent.futures import ThreadPoolExecutor
+from requests_futures.sessions import FuturesSession
 ap = argparse.ArgumentParser()
 ap.add_argument("-k", "--key", required=True,type=str,
         help="Telegram bot key")
@@ -61,6 +63,7 @@ def check_online_status():
         username_list=[]
         chatid_list=[]
         online_list=[]
+        response_list=[]
         sql = "SELECT * FROM CHATURBATE"
         try:
             db = sqlite3.connect(bot_path+'/database.db')
@@ -75,12 +78,17 @@ def check_online_status():
                 handle_exception(e)
         finally:
                 db.close()
+        session = FuturesSession(executor=ThreadPoolExecutor(max_workers=int(len(username_list))))
         for x in range(0,len(username_list)):
-            target="https://it.chaturbate.com/api/chatvideocontext/"+username_list[x]
-            req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
             try:
-             html = urllib.request.urlopen(req).read()
-             if (b"offline" in html):
+             response = ((session.get("https://it.chaturbate.com/api/chatvideocontext/"+username_list[x])).result()).content
+            except Exception as e:
+              handle_exception()
+              response="error"
+            response_list.append(response)
+        for x in range(0,len(response_list)):
+            try:
+             if (b"offline" in response_list[x]):
                 if online_list[x]=="T":
                     exec_query("UPDATE CHATURBATE \
                     SET ONLINE='{}'\
