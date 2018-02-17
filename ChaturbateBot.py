@@ -159,12 +159,12 @@ def telegram_bot():
    username_list=[]
    online_list=[]
    followed_users=""
-   db_list = sqlite3.connect(bot_path+'/database.db')
+   db = sqlite3.connect(bot_path+'/database.db')
    cursor = db.cursor()
    sql = "SELECT * FROM CHATURBATE \
    WHERE CHAT_ID='{}'".format(chatid)
    try:
-       cursor_list.execute(sql)
+       cursor.execute(sql)
        results = cursor.fetchall()
        for row in results:
            username_list.append(row[0])
