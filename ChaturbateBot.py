@@ -72,7 +72,7 @@ def check_online_status():
                 chatid_list.append(row[1])
                 online_list.append(row[2])
         except Exception as e:
-                print (e in +"in check_online_status_db")
+                handle_exception(e)
         finally:
                 db.close()
         for x in range(0,len(username_list)):
@@ -114,21 +114,21 @@ def telegram_bot():
      if (b"Access Denied. This room has been banned.</span>" in html or username==""):
           risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
      else:
-          username_list_add=[]
-          db_add = sqlite3.connect(bot_path+'/database.db')
-          cursor_add = db_add.cursor()
+          username_list=[]
+          db = sqlite3.connect(bot_path+'/database.db')
+          cursor = db.cursor()
           sql = "SELECT * FROM CHATURBATE \
           WHERE CHAT_ID='{}'".format(chatid)
           try:
-           cursor_add.execute(sql)
-           results_add = cursor_add.fetchall()
-           for row in results_add:
-             username_list_add.append(row[0])
+           cursor.execute(sql)
+           results = cursor.fetchall()
+           for row in results:
+             username_list.append(row[0])
           except Exception as e:
              handle_exception(e)
           finally:
-             db_add.close()
-          if username not in username_list_add:
+             db.close()
+          if username not in username_list:
            exec_query("INSERT INTO CHATURBATE \
            VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
            risposta(message.chat.id,username+" has been added")
@@ -156,30 +156,30 @@ def telegram_bot():
  @bot.message_handler(commands=['list'])
  def handle_list(message):
    chatid=message.chat.id
-   username_list_list=[]
-   online_list_list=[]
+   username_list=[]
+   online_list=[]
    followed_users=""
    db_list = sqlite3.connect(bot_path+'/database.db')
-   cursor_list = db_list.cursor()
+   cursor = db.cursor()
    sql = "SELECT * FROM CHATURBATE \
    WHERE CHAT_ID='{}'".format(chatid)
    try:
        cursor_list.execute(sql)
-       results_list = cursor_list.fetchall()
-       for row in results_list:
-           username_list_list.append(row[0])
-           online_list_list.append(row[2])
+       results = cursor.fetchall()
+       for row in results:
+           username_list.append(row[0])
+           online_list.append(row[2])
    except Exception as e:
            handle_exception(e)
-   else: #else vuol dire che il codice viene eseguito se non c'è una exception
-    for x in range(0,len(username_list_list)):
-       followed_users+=username_list_list[x]+": "
-       if online_list_list[x]=="T":
+   else: #else means that the code will get executed if an exception doesn't happen
+    for x in range(0,len(username_list)):
+       followed_users+=username_list[x]+": "
+       if online_list[x]=="T":
            followed_users+="online\n"
        else:
            followed_users+="offline\n"
    finally:
-       db_list.close()
+       db.close()
    if followed_users=="":
        risposta(message.chat.id,"You aren't following any user")
    else:
