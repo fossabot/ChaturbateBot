@@ -18,7 +18,7 @@ ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
-bot = telebot.TeleBot(args["key"])
+bot = telebot.AsyncTeleBot(args["key"])
 bot_path=args["working_folder"]
 wait_time=args["time"]
 raven_key=args["raven"]
