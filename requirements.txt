@@ -2,3 +2,4 @@ requests
 pyTelegramBotApi
 beautifulsoup4
 raven
+requests_futures

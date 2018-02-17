@@ -83,7 +83,7 @@ def check_online_status():
             try:
              response = ((session.get("https://it.chaturbate.com/api/chatvideocontext/"+username_list[x])).result()).content
             except Exception as e:
-              handle_exception()
+              handle_exception(e)
               response="error"
             response_list.append(response)
         for x in range(0,len(response_list)):
