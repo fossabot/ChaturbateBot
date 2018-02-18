@@ -105,7 +105,7 @@ def check_online_status():
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
  def handle_start_help(message):
-     risposta(message,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
+     risposta(message.chat.id,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
  @bot.message_handler(commands=['add'])
  def handle_add(message):
     print("add")
