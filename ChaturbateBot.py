@@ -151,22 +151,33 @@ def telegram_bot():
  @bot.message_handler(commands=['remove'])
  def handle_remove(message):
     print("remove")
-    try:
-        chatid=message.chat.id
-        if len(message.text.split(" "))<2:
+    chatid=message.chat.id
+    username_list=[]
+    if len(message.text.split(" "))<2:
             risposta(message.chat.id, "You may have made a mistake, check your input and try again")
             return
-        username=message.text.split(" ")[1]
-    except Exception as e:
-        handle_exception(e)
-        username="" #set username to a blank string
-        chatid="" #set chatid to a blank string
-    exec_query("DELETE FROM CHATURBATE \
-     WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
+    username=message.text.split(" ")[1]
     if username=="":
-        risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
-    else:
+            risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
+            return
+    sql = "SELECT * FROM CHATURBATE WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
+    try:
+        db = sqlite3.connect(bot_path+'/database.db')
+        cursor = db.cursor()
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        for row in results:
+            username_list.append(row[0])
+    except Exception as e:
+            handle_exception(e)
+    finally:
+            db.close()
+    if username in username_list[]: #this could have a better implementation but it works
+        exec_query("DELETE FROM CHATURBATE \
+        WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
         risposta(message.chat.id,username+" has been removed")
+    else:
+        risposta(message.chat.id,"You aren't following the username you have tried to remove")
  @bot.message_handler(commands=['list'])
  def handle_list(message):
    chatid=message.chat.id
