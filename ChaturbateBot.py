@@ -160,7 +160,7 @@ def telegram_bot():
     if username=="":
             risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
             return
-    sql = "SELECT * FROM CHATURBATE WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
+    sql = "SELECT * FROM CHATURBATE WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid)
     try:
         db = sqlite3.connect(bot_path+'/database.db')
         cursor = db.cursor()
