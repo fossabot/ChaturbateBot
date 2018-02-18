@@ -172,7 +172,7 @@ def telegram_bot():
             handle_exception(e)
     finally:
             db.close()
-    if username in username_list[]: #this could have a better implementation but it works
+    if username in username_list: #this could have a better implementation but it works
         exec_query("DELETE FROM CHATURBATE \
         WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
         risposta(message.chat.id,username+" has been removed")
