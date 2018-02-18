@@ -192,10 +192,11 @@ def telegram_bot():
        risposta(message.chat.id,"You aren't following any user")
    else:
        risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
- try:
-  bot.polling(none_stop=True)
- except Exception as e:
-     handle_exception(e)
+ while True:
+     try:
+         bot.polling(none_stop=True)
+     except Exception as e:
+         handle_exception(e)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
 telegram_bot_thread = threading.Thread(target=telegram_bot)
