@@ -110,6 +110,9 @@ def telegram_bot():
  def handle_add(message):
     print("add")
     try:
+        if len(message.text.split(" "))<2:
+            risposta(message.chat.id, "You may have made a mistake, check your input and try again")
+            return
         username=message.text.split(" ")[1]
     except Exception as e:
         handle_exception(e)
@@ -150,6 +153,9 @@ def telegram_bot():
     print("remove")
     try:
         chatid=message.chat.id
+        if len(message.text.split(" "))<2:
+            risposta(message.chat.id, "You may have made a mistake, check your input and try again")
+            return
         username=message.text.split(" ")[1]
     except Exception as e:
         handle_exception(e)
