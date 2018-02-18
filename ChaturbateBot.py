@@ -7,6 +7,8 @@ import os.path
 import argparse
 import sqlite3
 import threading
+from concurrent.futures import ThreadPoolExecutor
+from requests_futures.sessions import FuturesSession
 ap = argparse.ArgumentParser()
 ap.add_argument("-k", "--key", required=True,type=str,
         help="Telegram bot key")
@@ -16,7 +18,7 @@ ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
-bot = telebot.TeleBot(args["key"])
+bot = telebot.AsyncTeleBot(args["key"])
 bot_path=args["working_folder"]
 wait_time=args["time"]
 raven_key=args["raven"]
@@ -61,6 +63,7 @@ def check_online_status():
         username_list=[]
         chatid_list=[]
         online_list=[]
+        response_list=[]
         sql = "SELECT * FROM CHATURBATE"
         try:
             db = sqlite3.connect(bot_path+'/database.db')
@@ -75,12 +78,17 @@ def check_online_status():
                 handle_exception(e)
         finally:
                 db.close()
+        session = FuturesSession(executor=ThreadPoolExecutor(max_workers=int(len(username_list))))
         for x in range(0,len(username_list)):
-            target="https://it.chaturbate.com/api/chatvideocontext/"+username_list[x]
-            req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
             try:
-             html = urllib.request.urlopen(req).read()
-             if (b"offline" in html):
+             response = ((session.get("https://it.chaturbate.com/api/chatvideocontext/"+username_list[x])).result()).content
+            except Exception as e:
+              handle_exception(e)
+              response="error"
+            response_list.append(response)
+        for x in range(0,len(response_list)):
+            try:
+             if (b"offline" in response_list[x]):
                 if online_list[x]=="T":
                     exec_query("UPDATE CHATURBATE \
                     SET ONLINE='{}'\
@@ -97,11 +105,14 @@ def check_online_status():
 def telegram_bot():
  @bot.message_handler(commands=['start', 'help'])
  def handle_start_help(message):
-     risposta(message,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
+     risposta(message.chat.id,"/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
  @bot.message_handler(commands=['add'])
  def handle_add(message):
     print("add")
     try:
+        if len(message.text.split(" "))<2:
+            risposta(message.chat.id, "You may have made a mistake, check your input and try again")
+            return
         username=message.text.split(" ")[1]
     except Exception as e:
         handle_exception(e)
@@ -140,19 +151,33 @@ def telegram_bot():
  @bot.message_handler(commands=['remove'])
  def handle_remove(message):
     print("remove")
-    try:
-        chatid=message.chat.id
-        username=message.text.split(" ")[1]
-    except Exception as e:
-        handle_exception(e)
-        username="" #set username to a blank string
-        chatid="" #set chatid to a blank string
-    exec_query("DELETE FROM CHATURBATE \
-     WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
+    chatid=message.chat.id
+    username_list=[]
+    if len(message.text.split(" "))<2:
+            risposta(message.chat.id, "You may have made a mistake, check your input and try again")
+            return
+    username=message.text.split(" ")[1]
     if username=="":
-        risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
-    else:
+            risposta(message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
+            return
+    sql = "SELECT * FROM CHATURBATE WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid)
+    try:
+        db = sqlite3.connect(bot_path+'/database.db')
+        cursor = db.cursor()
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        for row in results:
+            username_list.append(row[0])
+    except Exception as e:
+            handle_exception(e)
+    finally:
+            db.close()
+    if username in username_list: #this could have a better implementation but it works
+        exec_query("DELETE FROM CHATURBATE \
+        WHERE USERNAME='{}' AND CHAT_ID='{}'".format(username, chatid))
         risposta(message.chat.id,username+" has been removed")
+    else:
+        risposta(message.chat.id,"You aren't following the username you have tried to remove")
  @bot.message_handler(commands=['list'])
  def handle_list(message):
    chatid=message.chat.id
@@ -184,10 +209,11 @@ def telegram_bot():
        risposta(message.chat.id,"You aren't following any user")
    else:
        risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
- try:
-  bot.polling(none_stop=True)
- except Exception as e:
-     handle_exception(e)
+ while True:
+     try:
+         bot.polling(none_stop=True)
+     except Exception as e:
+         handle_exception(e)
 threads = []
 check_online_status_thread = threading.Thread(target=check_online_status)
 telegram_bot_thread = threading.Thread(target=telegram_bot)
