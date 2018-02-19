@@ -16,12 +16,14 @@ ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.get
         help="set the bot's working-folder")
 ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
+ap.add_argument("-threads",required=False,type=int,default=10,help="The number of multiple http connection opened at the same to check chaturbate")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
 bot = telebot.AsyncTeleBot(args["key"])
 bot_path=args["working_folder"]
 wait_time=args["time"]
 raven_key=args["raven"]
+http_threads=args["threads"]
 if raven_key!="":
     from raven import Client
     client = Client(raven_key)
@@ -78,7 +80,7 @@ def check_online_status():
                 handle_exception(e)
         finally:
                 db.close()
-        session = FuturesSession(executor=ThreadPoolExecutor(max_workers=int(len(username_list))))
+        session = FuturesSession(executor=ThreadPoolExecutor(max_workers=http_threads))
         for x in range(0,len(username_list)):
             try:
              response = ((session.get("https://it.chaturbate.com/api/chatvideocontext/"+username_list[x])).result()).content
