@@ -127,7 +127,7 @@ def telegram_bot():
      req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
      html = urllib.request.urlopen(req).read()
      if (b"Access Denied. This room has been banned.</span>" in html or username==""):
-          risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
+          risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned. If you are sure it exists, you may want to try the command again")
      else:
           username_list=[]
           db = sqlite3.connect(bot_path+'/database.db')
@@ -151,7 +151,7 @@ def telegram_bot():
            else:
             risposta(message.chat.id, username+" has already been added")
           else:
-              risposta(message.chat.id,"You have reached your maximum number of permitted followed models, which is "+user_limit)
+              risposta(message.chat.id,"You have reached your maximum number of permitted followed models, which is "+str(user_limit))
     except Exception as e:
         handle_exception(e)
         risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
