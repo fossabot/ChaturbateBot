@@ -143,7 +143,7 @@ def telegram_bot():
              handle_exception(e)
           finally:
              db.close()
-          if len(username_list) < user_limit and user_limit!=0:
+          if len(username_list) < user_limit or user_limit==0:
            if username not in username_list:
             exec_query("INSERT INTO CHATURBATE \
             VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
