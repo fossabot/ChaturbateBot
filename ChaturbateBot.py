@@ -17,6 +17,7 @@ ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.get
 ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
 ap.add_argument("-threads",required=False,type=int,default=10,help="The number of multiple http connection opened at the same to check chaturbate")
+ap.add_argument("-l,-limit",required=False,type=int,default=0,help="The maximum number of multiple users a person can follow")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
 bot = telebot.AsyncTeleBot(args["key"])
@@ -24,6 +25,7 @@ bot_path=args["working_folder"]
 wait_time=args["time"]
 raven_key=args["raven"]
 http_threads=args["threads"]
+user_limit=args["limit"]
 if raven_key!="":
     from raven import Client
     client = Client(raven_key)
@@ -141,12 +143,15 @@ def telegram_bot():
              handle_exception(e)
           finally:
              db.close()
-          if username not in username_list:
-           exec_query("INSERT INTO CHATURBATE \
-           VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
-           risposta(message.chat.id,username+" has been added")
+          if len(username_list) < user_limit and user_limit!=0:
+           if username not in username_list:
+            exec_query("INSERT INTO CHATURBATE \
+            VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
+            risposta(message.chat.id,username+" has been added")
+           else:
+            risposta(message.chat.id, username+" has already been added")
           else:
-           risposta(message.chat.id, username+" has already been added")
+              risposta(message.chat.id,"You have reached your maximum number of permitted followed models, which is "+user_limit)
     except Exception as e:
         handle_exception(e)
         risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
