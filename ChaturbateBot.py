@@ -17,7 +17,7 @@ ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.get
 ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
 ap.add_argument("-threads",required=False,type=int,default=10,help="The number of multiple http connection opened at the same to check chaturbate")
-ap.add_argument("-l,-limit",required=False,type=int,default=0,help="The maximum number of multiple users a person can follow")
+ap.add_argument("-l","--limit",required=False,type=int,default=0,help="The maximum number of multiple users a person can follow")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
 bot = telebot.AsyncTeleBot(args["key"])
