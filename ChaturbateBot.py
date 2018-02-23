@@ -40,6 +40,12 @@ def risposta(sender, messaggio):
      bot.send_message(sender, messaggio)
     except Exception as e:
         handle_exception(e)
+def risposta_html(sender, messaggio):
+    try:
+     bot.send_chat_action(sender, action="typing")
+     bot.send_message(sender, messaggio, parse_mode="HTML")
+    except Exception as e:
+        handle_exception(e)
 def exec_query(query):
  # Open database connection
  db = sqlite3.connect(bot_path+'/database.db')
@@ -207,7 +213,7 @@ def telegram_bot():
     for x in range(0,len(username_list)):
        followed_users+=username_list[x]+": "
        if online_list[x]=="T":
-           followed_users+="online\n"
+           followed_users+="<b>online</b>\n"
        else:
            followed_users+="offline\n"
    finally:
@@ -215,7 +221,7 @@ def telegram_bot():
    if followed_users=="":
        risposta(message.chat.id,"You aren't following any user")
    else:
-       risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
+       risposta_html(message.chat.id,"These are the users you are currently following:\n"+followed_users)
  while True:
      try:
          bot.polling(none_stop=True)
