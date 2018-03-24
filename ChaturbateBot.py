@@ -20,7 +20,7 @@ ap.add_argument("-threads",required=False,type=int,default=10,help="The number o
 ap.add_argument("-l","--limit",required=False,type=int,default=0,help="The maximum number of multiple users a person can follow")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
-bot = telebot.AsyncTeleBot(args["key"])
+bot = telebot.TeleBot(args["key"])
 bot_path=args["working_folder"]
 wait_time=args["time"]
 raven_key=args["raven"]
