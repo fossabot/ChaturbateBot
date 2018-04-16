@@ -16,12 +16,16 @@ ap.add_argument("-f", "--working-folder", required=False,type=str,default=os.get
         help="set the bot's working-folder")
 ap.add_argument("-t", "--time", required=False,type=int,default=10,
         help="time wait between every end of the check_online_status thread")
+ap.add_argument("-threads",required=False,type=int,default=10,help="The number of multiple http connection opened at the same to check chaturbate")
+ap.add_argument("-l","--limit",required=False,type=int,default=0,help="The maximum number of multiple users a person can follow")
 ap.add_argument("-raven",required=False,type=str,default="",help="Raven client key")
 args = vars(ap.parse_args())
-bot = telebot.AsyncTeleBot(args["key"])
+bot = telebot.TeleBot(args["key"])
 bot_path=args["working_folder"]
 wait_time=args["time"]
 raven_key=args["raven"]
+http_threads=args["threads"]
+user_limit=args["limit"]
 if raven_key!="":
     from raven import Client
     client = Client(raven_key)
@@ -34,6 +38,12 @@ def risposta(sender, messaggio):
     try:
      bot.send_chat_action(sender, action="typing")
      bot.send_message(sender, messaggio)
+    except Exception as e:
+        handle_exception(e)
+def risposta_html(sender, messaggio):
+    try:
+     bot.send_chat_action(sender, action="typing")
+     bot.send_message(sender, messaggio, parse_mode="HTML")
     except Exception as e:
         handle_exception(e)
 def exec_query(query):
@@ -78,7 +88,7 @@ def check_online_status():
                 handle_exception(e)
         finally:
                 db.close()
-        session = FuturesSession(executor=ThreadPoolExecutor(max_workers=int(len(username_list))))
+        session = FuturesSession(executor=ThreadPoolExecutor(max_workers=http_threads))
         for x in range(0,len(username_list)):
             try:
              response = ((session.get("https://it.chaturbate.com/api/chatvideocontext/"+username_list[x])).result()).content
@@ -123,7 +133,7 @@ def telegram_bot():
      req = urllib.request.Request(target, headers={'User-Agent': 'Mozilla/5.0'})
      html = urllib.request.urlopen(req).read()
      if (b"Access Denied. This room has been banned.</span>" in html or username==""):
-          risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned.\nIf you are sure it exists, you may want to try the command again")
+          risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned. If you are sure it exists, you may want to try the command again")
      else:
           username_list=[]
           db = sqlite3.connect(bot_path+'/database.db')
@@ -139,12 +149,15 @@ def telegram_bot():
              handle_exception(e)
           finally:
              db.close()
-          if username not in username_list:
-           exec_query("INSERT INTO CHATURBATE \
-           VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
-           risposta(message.chat.id,username+" has been added")
+          if len(username_list) < user_limit or user_limit==0:
+           if username not in username_list:
+            exec_query("INSERT INTO CHATURBATE \
+            VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
+            risposta(message.chat.id,username+" has been added")
+           else:
+            risposta(message.chat.id, username+" has already been added")
           else:
-           risposta(message.chat.id, username+" has already been added")
+              risposta(message.chat.id,"You have reached your maximum number of permitted followed models, which is "+str(user_limit))
     except Exception as e:
         handle_exception(e)
         risposta(message.chat.id, username+" was not added because it doesn't exist or it has been banned")
@@ -200,7 +213,7 @@ def telegram_bot():
     for x in range(0,len(username_list)):
        followed_users+=username_list[x]+": "
        if online_list[x]=="T":
-           followed_users+="online\n"
+           followed_users+="<b>online</b>\n"
        else:
            followed_users+="offline\n"
    finally:
@@ -208,7 +221,7 @@ def telegram_bot():
    if followed_users=="":
        risposta(message.chat.id,"You aren't following any user")
    else:
-       risposta(message.chat.id,"These are the users you are currently following:\n"+followed_users)
+       risposta_html(message.chat.id,"These are the users you are currently following:\n"+followed_users)
  while True:
      try:
          bot.polling(none_stop=True)
