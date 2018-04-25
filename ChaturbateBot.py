@@ -114,14 +114,14 @@ def check_online_status():
             response_list.append(response)
         for x in range(0, len(response_list)):
             try:
-                if (b"offline" in response_list[x]):
+                if (b"offline" in response_list[x] and response != "error"):
                     if online_list[x] == "T":
                         exec_query("UPDATE CHATURBATE \
                     SET ONLINE='{}'\
                     WHERE USERNAME='{}' AND CHAT_ID='{}'".format("F", username_list[x], chatid_list[x]))
                         risposta(
                             chatid_list[x], username_list[x] + " is now offline")
-                elif online_list[x] == "F":
+                elif (online_list[x] == "F" and response != "error"):
                     # the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
                     risposta(chatid_list[x], username_list[x] +
                              " is now online! You can watch the live here: http://en.chaturbate.com/" + username_list[x])
