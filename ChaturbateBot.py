@@ -10,18 +10,39 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from requests_futures.sessions import FuturesSession
 ap = argparse.ArgumentParser()
-ap.add_argument("-k", "--key", required=True, type=str,
-                help="Telegram bot key")
-ap.add_argument("-f", "--working-folder", required=False, type=str, default=os.getcwd(),
-                help="set the bot's working-folder")
-ap.add_argument("-t", "--time", required=False, type=int, default=10,
-                help="time wait between every end of the check_online_status thread")
-ap.add_argument("-threads", required=False, type=int, default=10,
-                help="The number of multiple http connection opened at the same to check chaturbate")
-ap.add_argument("-l", "--limit", required=False, type=int, default=0,
-                help="The maximum number of multiple users a person can follow")
-ap.add_argument("-raven", required=False, type=str,
-                default="", help="Raven client key")
+ap.add_argument(
+    "-k", "--key", required=True, type=str, help="Telegram bot key")
+ap.add_argument(
+    "-f",
+    "--working-folder",
+    required=False,
+    type=str,
+    default=os.getcwd(),
+    help="set the bot's working-folder")
+ap.add_argument(
+    "-t",
+    "--time",
+    required=False,
+    type=float,
+    default=0.2,
+    help="time wait between every connection made, in seconds")
+ap.add_argument(
+    "-threads",
+    required=False,
+    type=int,
+    default=10,
+    help=
+    "The number of multiple http connection opened at the same to check chaturbate"
+)
+ap.add_argument(
+    "-l",
+    "--limit",
+    required=False,
+    type=int,
+    default=0,
+    help="The maximum number of multiple users a person can follow")
+ap.add_argument(
+    "-raven", required=False, type=str, default="", help="Raven client key")
 args = vars(ap.parse_args())
 bot = telebot.TeleBot(args["key"])
 bot_path = args["working_folder"]
@@ -36,6 +57,7 @@ if raven_key != "":
     def handle_exception(e):
         client.captureException()
 else:
+
     def handle_exception(e):
         print(str(e))
 
@@ -83,7 +105,7 @@ exec_query("""CREATE TABLE IF NOT EXISTS CHATURBATE (
 
 
 def check_online_status():
-    while(1):
+    while (1):
         username_list = []
         chatid_list = []
         online_list = []
@@ -107,36 +129,44 @@ def check_online_status():
         for x in range(0, len(username_list)):
             try:
                 response = ((session.get(
-                    "https://it.chaturbate.com/api/chatvideocontext/" + username_list[x])).result()).content
+                    "https://it.chaturbate.com/api/chatvideocontext/" +
+                    username_list[x])).result()).content
             except Exception as e:
                 handle_exception(e)
                 response = "error"
             response_list.append(response)
+            time.sleep(wait_time)
         for x in range(0, len(response_list)):
             try:
                 if (b"offline" in response_list[x] and response != "error"):
                     if online_list[x] == "T":
                         exec_query("UPDATE CHATURBATE \
                     SET ONLINE='{}'\
-                    WHERE USERNAME='{}' AND CHAT_ID='{}'".format("F", username_list[x], chatid_list[x]))
-                        risposta(
-                            chatid_list[x], username_list[x] + " is now offline")
+                    WHERE USERNAME='{}' AND CHAT_ID='{}'".format(
+                            "F", username_list[x], chatid_list[x]))
+                        risposta(chatid_list[x],
+                                 username_list[x] + " is now offline")
                 elif (online_list[x] == "F" and response != "error"):
                     # the 1 is to replace only the 1st occurrence, otherwise the username in the target may get overwritten
-                    risposta(chatid_list[x], username_list[x] +
-                             " is now online! You can watch the live here: http://en.chaturbate.com/" + username_list[x])
+                    risposta(
+                        chatid_list[x], username_list[x] +
+                        " is now online! You can watch the live here: http://en.chaturbate.com/"
+                        + username_list[x])
                     exec_query("UPDATE CHATURBATE \
                 SET ONLINE='{}'\
-                WHERE USERNAME='{}' AND CHAT_ID='{}'".format("T", username_list[x], chatid_list[x]))
+                WHERE USERNAME='{}' AND CHAT_ID='{}'".format(
+                        "T", username_list[x], chatid_list[x]))
             except Exception as e:
                 handle_exception(e)
-        time.sleep(wait_time)
 
 
 def telegram_bot():
     @bot.message_handler(commands=['start', 'help'])
     def handle_start_help(message):
-        risposta(message.chat.id, "/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following")
+        risposta(
+            message.chat.id,
+            "/add username to add an username to check \n/remove username to remove an username \n/list to see which users you are currently following"
+        )
 
     @bot.message_handler(commands=['add'])
     def handle_add(message):
@@ -144,7 +174,9 @@ def telegram_bot():
         try:
             if len(message.text.split(" ")) < 2:
                 risposta(
-                    message.chat.id, "You may have made a mistake, check your input and try again")
+                    message.chat.id,
+                    "You may have made a mistake, check your input and try again"
+                )
                 return
             username = message.text.split(" ")[1]
         except Exception as e:
@@ -156,9 +188,12 @@ def telegram_bot():
             req = urllib.request.Request(
                 target, headers={'User-Agent': 'Mozilla/5.0'})
             html = urllib.request.urlopen(req).read()
-            if (b"Access Denied. This room has been banned.</span>" in html or username == ""):
-                risposta(message.chat.id, username +
-                         " was not added because it doesn't exist or it has been banned. If you are sure it exists, you may want to try the command again")
+            if (b"Access Denied. This room has been banned.</span>" in html
+                    or username == ""):
+                risposta(
+                    message.chat.id, username +
+                    " was not added because it doesn't exist or it has been banned. If you are sure it exists, you may want to try the command again"
+                )
             else:
                 username_list = []
                 db = sqlite3.connect(bot_path + '/database.db')
@@ -180,15 +215,19 @@ def telegram_bot():
             VALUES ('{}', '{}', '{}')".format(username, chatid, "F"))
                         risposta(message.chat.id, username + " has been added")
                     else:
-                        risposta(message.chat.id, username +
-                                 " has already been added")
+                        risposta(message.chat.id,
+                                 username + " has already been added")
                 else:
                     risposta(
-                        message.chat.id, "You have reached your maximum number of permitted followed models, which is " + str(user_limit))
+                        message.chat.id,
+                        "You have reached your maximum number of permitted followed models, which is "
+                        + str(user_limit))
         except Exception as e:
             handle_exception(e)
-            risposta(message.chat.id, username +
-                     " was not added because it doesn't exist or it has been banned")
+            risposta(
+                message.chat.id, username +
+                " was not added because it doesn't exist or it has been banned"
+            )
 
     @bot.message_handler(commands=['remove'])
     def handle_remove(message):
@@ -197,12 +236,15 @@ def telegram_bot():
         username_list = []
         if len(message.text.split(" ")) < 2:
             risposta(
-                message.chat.id, "You may have made a mistake, check your input and try again")
+                message.chat.id,
+                "You may have made a mistake, check your input and try again")
             return
         username = message.text.split(" ")[1]
         if username == "":
             risposta(
-                message.chat.id, "The username you tried to remove doesn't exist or there has been an error")
+                message.chat.id,
+                "The username you tried to remove doesn't exist or there has been an error"
+            )
             return
         sql = "SELECT * FROM CHATURBATE WHERE USERNAME='{}' AND CHAT_ID='{}'".format(
             username, chatid)
@@ -223,7 +265,8 @@ def telegram_bot():
             risposta(message.chat.id, username + " has been removed")
         else:
             risposta(
-                message.chat.id, "You aren't following the username you have tried to remove")
+                message.chat.id,
+                "You aren't following the username you have tried to remove")
 
     @bot.message_handler(commands=['list'])
     def handle_list(message):
@@ -255,8 +298,10 @@ def telegram_bot():
         if followed_users == "":
             risposta(message.chat.id, "You aren't following any user")
         else:
-            risposta_html(
-                message.chat.id, "These are the users you are currently following:\n" + followed_users)
+            risposta_html(message.chat.id,
+                          "These are the users you are currently following:\n"
+                          + followed_users)
+
     while True:
         try:
             bot.polling(none_stop=True)
